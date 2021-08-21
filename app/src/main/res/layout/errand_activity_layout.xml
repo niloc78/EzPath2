@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.drawerlayout.widget.DrawerLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/drawer_layout"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:background="@color/backgroundgrey"
+    tools:openDrawer="start">
+
+    <FrameLayout
+        android:id="@+id/content_frame"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <androidx.viewpager2.widget.ViewPager2
+                android:id="@+id/frag_pager"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"/>
+
+            <com.google.android.material.floatingactionbutton.FloatingActionButton
+                android:id="@+id/toggle_frag_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:fabCustomSize="@dimen/design_fab_size_custom"
+                android:src="@drawable/ic_map_icon"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                android:layout_marginRight="20dp"
+                android:layout_marginBottom="20dp"
+                android:elevation="5dp"/>
+
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+    </FrameLayout>
+
+
+
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/drawer_container"
+        android:layout_width="320dp"
+        android:layout_gravity="start"
+        android:layout_height="match_parent"
+        android:background="#3C4548">
+
+        <ImageView
+            android:id="@+id/drawer_logo"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/drawer_logo"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"/>
+
+        <ImageView
+            android:id="@+id/divider"
+            android:layout_width="wrap_content"
+            android:layout_height="0dp"
+            android:src="@drawable/drawer_divider"
+            app:layout_constraintTop_toBottomOf="@id/drawer_logo"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="@id/drawer_logo"
+            app:layout_constraintEnd_toEndOf="@id/drawer_logo"
+            app:layout_constraintHorizontal_bias="0.4"/>
+
+
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/moving_shape_background"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            app:layout_constraintTop_toTopOf="@id/filter_button"
+            app:layout_constraintBottom_toBottomOf="@id/filter_button"
+            app:cardBackgroundColor="#7D8F94"
+            app:layout_constraintStart_toStartOf="@id/filter_button"
+            app:layout_constraintEnd_toEndOf="@id/filter_button"
+            app:cardElevation="0dp"/>
+
+
+
+        <ImageButton
+            android:id="@+id/filter_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/divider"
+            app:layout_constraintTop_toTopOf="@id/divider"
+            android:src="@drawable/ic_filter_icon"
+            android:background="@drawable/icon_background_selector"
+            app:tint="@color/icon_tint_selector"
+            android:layout_marginBottom="10dp" />
+
+        <ImageButton
+            android:id="@+id/folder_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/divider"
+            app:layout_constraintTop_toBottomOf="@id/filter_button"
+            android:src="@drawable/ic_folder_icon"
+            android:background="@drawable/icon_background_selector"
+            app:tint="@color/icon_tint_selector"
+            android:layout_marginTop="10dp" />
+
+
+
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+
+</androidx.drawerlayout.widget.DrawerLayout>
