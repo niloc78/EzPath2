@@ -1,5 +1,7 @@
 package com.example.ezpath2
 
+import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -8,7 +10,7 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.card.MaterialCardView
 
-class ErrandAdapter(var data : ArrayList<LinkedHashMap<String, String>>): RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+class ErrandAdapter(val parFrag : ErrandFragment, var data : ArrayList<LinkedHashMap<String, String>>): RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
     inner class ErrandViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         private val errandName : TextView = itemView.findViewById(R.id.errand_name)
@@ -23,8 +25,24 @@ class ErrandAdapter(var data : ArrayList<LinkedHashMap<String, String>>): Recycl
             address.text = addr
             checkBox.setOnCheckedChangeListener { buttonView, isChecked ->
                 when(isChecked) {
-                    true -> errandCard.isChecked = true
-                    else -> errandCard.isChecked = false
+                    true -> {
+                        errandCard.isChecked = true
+                        parFrag.parentFragmentManager.apply {
+                            val result = Bundle()
+                            result.putBoolean("checked", true)
+                            result.putInt("index", adapterPosition)
+                            setFragmentResult("errandCheckChanged", result)
+                        }
+                    }
+                    else -> {
+                        errandCard.isChecked = false
+                        parFrag.parentFragmentManager.apply {
+                            val result = Bundle()
+                            result.putBoolean("checked", false)
+                            result.putInt("index", adapterPosition)
+                            setFragmentResult("errandCheckChanged", result)
+                        }
+                    }
                 }
             }
         }
@@ -36,8 +54,9 @@ class ErrandAdapter(var data : ArrayList<LinkedHashMap<String, String>>): Recycl
 
         fun bind() {
             addButton.setOnClickListener {
-                data.add(linkedMapOf("errandName" to "Buy Pencils", "storeName" to "CW Enterprise", "address" to "15 Orchard Street"))
-                this@ErrandAdapter.notifyItemInserted(data.lastIndex)
+                  parFrag.openDialog()
+//                data.add(linkedMapOf("errandName" to "Buy Pencils", "storeName" to "CW Enterprise", "address" to "15 Orchard Street"))
+//                this@ErrandAdapter.notifyItemInserted(data.lastIndex)
             }
         }
     }
@@ -94,5 +113,6 @@ class ErrandAdapter(var data : ArrayList<LinkedHashMap<String, String>>): Recycl
     override fun getItemCount(): Int {
        return data.size + 1
     }
+
 
 }

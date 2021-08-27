@@ -20,6 +20,9 @@
         <item name="shapeAppearanceOverlay">@style/sheetOverlay</item>
     </style>
 
+    <style name="customRatingBarSize" parent="Widget.AppCompat.RatingBar.Small">
+    </style>
+
     <style name="sheetOverlay" parent="">
         <item name="cornerFamily">rounded</item>
         <item name="cornerSizeTopRight">42dp</item>

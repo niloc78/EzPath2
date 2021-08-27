@@ -116,11 +116,12 @@
         app:layout_constraintTop_toTopOf="@id/header_background"
         app:layout_constraintBottom_toBottomOf="@id/header_background"
         app:layout_constraintVertical_bias="0.84"/>
-    <ImageButton
+
+    <ImageView
         android:id="@+id/side_bar_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:src="@drawable/ic_menu_icon"
+        app:srcCompat="@drawable/ic_menu_icon"
         android:background="@null"
         app:layout_constraintStart_toStartOf="@id/location_card"
         app:layout_constraintTop_toTopOf="@id/todays_errands"

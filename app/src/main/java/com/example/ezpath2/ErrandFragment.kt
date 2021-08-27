@@ -1,29 +1,49 @@
 package com.example.ezpath2
 
+import android.app.Activity
+import android.content.Context
+import android.content.Intent
+import android.graphics.drawable.AnimatedVectorDrawable
 import android.os.Bundle
+import android.util.Log
 import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageButton
+import android.widget.ImageView
+import android.widget.TextView
+import android.widget.Toast
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.view.GravityCompat
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import androidx.transition.Transition
+import androidx.transition.TransitionInflater
+import androidx.transition.TransitionManager
 import com.google.android.material.card.MaterialCardView
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.runBlocking
 import java.util.*
 import kotlin.collections.ArrayList
 import kotlin.collections.LinkedHashMap
 
-class ErrandFragment : Fragment() {
-    lateinit var sideBarButton : ImageButton
-    lateinit var addErrandButton : MaterialCardView
+class ErrandFragment : Fragment(), AddErrandDialog.AddErrandDialogListener {
+    lateinit var sideBarButton : ImageView
+    lateinit var locationText : TextView
     lateinit var locationCard : MaterialCardView
     lateinit var errandAdapter : ErrandAdapter
     lateinit var errandRecyclerView : RecyclerView
     private var data : ArrayList<LinkedHashMap<String,String>> = ArrayList()
+    lateinit var errandModel : ErrandModel
+    var errArray : Array<String>? = null
     private lateinit var linearLayoutManager : LinearLayoutManager
+    private var index = 0
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -36,16 +56,35 @@ class ErrandFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         initViews(view)
+        errandModel = ViewModelProvider(requireActivity()).get(ErrandModel::class.java)
+        parentFragmentManager.apply {
+            setFragmentResultListener("markerReAdded", this@ErrandFragment, { _, result ->
+                if (result.getBoolean("markerReAdded")) {
+                    index ++
+                    if (index <= errArray!!.lastIndex) {
+                        reAdd(errArray!![index])
+                    } else {
+                        index = 0
+                    }
+                }
+            })
+        }
     }
 
 
     private fun initViews(v : View) {
         linearLayoutManager = LinearLayoutManager(context)
         locationCard = v.findViewById(R.id.location_card)
+        locationCard.setOnClickListener {
+            startChangeLocationForResult()
+
+        }
+        locationText = v.findViewById(R.id.location_text)
+        locationText.text = (activity as ErrandActivity).currPlaceAddress
 //        addErrandButton = v.findViewById(R.id.add_errand_button)
         errandRecyclerView = v.findViewById(R.id.errand_recycler_view)
-        data = populateExampleData()
-        errandAdapter = ErrandAdapter(data)
+//        data = populateExampleData()
+        errandAdapter = ErrandAdapter(this, data)
         errandRecyclerView.apply {
 //            isNestedScrollingEnabled = false
             layoutManager = linearLayoutManager
@@ -55,11 +94,104 @@ class ErrandFragment : Fragment() {
         sideBarButton = v.findViewById(R.id.side_bar_button)
         sideBarButton.setOnClickListener {
             (activity as ErrandActivity).drawerLayout.openDrawer(GravityCompat.START)
+            //toggleSideBarButtonAnim()
+//            val avd : AnimatedVectorDrawable = sideBarButton.drawable as AnimatedVectorDrawable
+//            avd.start()
         }
-//        addErrandButton.setOnClickListener {
-//            data.add(linkedMapOf("errandName" to "Buy Pencils", "storeName" to "CW Enterprise", "address" to "15 Orchard Street"))
-//            errandRecyclerView.adapter?.notifyItemInserted(data.lastIndex)
-//        }
+
+
+
+
+
+    }
+
+    private fun startChangeLocationForResult() {
+        locationLauncher.launch(Intent(context, MainActivity::class.java))
+    }
+
+    private val locationLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+        if (result.resultCode == Activity.RESULT_OK) { // received result
+            val intent = result.data
+            (activity as ErrandActivity).apply {
+                currPlaceId = intent?.getStringExtra("currPlaceId")!!
+                currPlaceAddress = intent?.getStringExtra("currPlaceAddress")!!
+                currPlaceLatLng = intent?.getDoubleArrayExtra("currPlaceLatLng")!!
+                locationText.text = currPlaceAddress
+            }
+            locationChanged()
+        } else {
+            Log.d("ActivityForResult", "Location not selected")
+        }
+    }
+
+    private fun locationChanged() {
+        data.clear()
+        errandRecyclerView.adapter?.notifyDataSetChanged()
+        errandModel.bestResults.value!!.clear()
+        parentFragmentManager.apply {
+            val result = Bundle()
+            result.putBoolean("locationChanged", true)
+            setFragmentResult("locationChanged", result)
+        }
+        errArray = errandModel.errands.value!!.toTypedArray()
+        errandModel.errands.value!!.clear()
+
+        if (!errArray.isNullOrEmpty()) {
+            reAdd(errArray!![index])
+        }
+
+    }
+
+
+
+    fun toggleSideBarButtonAnim() {
+        val set = TransitionInflater.from(context).inflateTransition(R.transition.animate)
+        set.duration = 150
+        sideBarButton.apply {
+            TransitionManager.beginDelayedTransition(this.parent as ViewGroup, set)
+            rotation = when (isSelected) {
+                true -> {
+                    0F
+                }
+                else -> {
+                    90F
+                }
+            }
+            isSelected = !isSelected
+        }
+
+
+    }
+
+    fun storeSet(setName : String) {
+        val c = requireContext()
+        val prefs = c.getSharedPreferences(c.packageName + "_preferences", Context.MODE_PRIVATE)
+        if (prefs.getStringSet(setName, null).isNullOrEmpty()) {
+            if (errandModel.errands.value!!.isNotEmpty()) {
+                prefs.edit().putStringSet(setName, errandModel.errands.value!!.toHashSet()).commit()
+                (requireActivity() as ErrandActivity).apply {
+                    setData.add(setName)
+                    savedSetsAdapter.notifyItemInserted(setData.lastIndex)
+                }
+            } else {
+                Toast.makeText(c, "You must add at least one errand", Toast.LENGTH_SHORT).show()
+            }
+        } else {
+            Toast.makeText(c, "Set name already exists", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    fun loadSet(setName : String) {
+        val c = requireContext()
+        val prefs = c.getSharedPreferences(c.packageName + "_preferences", Context.MODE_PRIVATE)
+        val set = prefs.getStringSet(setName, null)
+        if (!set.isNullOrEmpty()) {
+            Log.d("loadset", "set exists")
+            errandModel.errands.value = ArrayList(set.toTypedArray().toList())
+            locationChanged()
+        } else {
+            Log.d("loadset", "set was null or empty")
+        }
     }
 
     private val itemTouchCallback : ItemTouchHelper.SimpleCallback = object : ItemTouchHelper.SimpleCallback(ItemTouchHelper.START or ItemTouchHelper.END or
@@ -70,33 +202,28 @@ class ErrandFragment : Fragment() {
             viewHolder: RecyclerView.ViewHolder,
             target: RecyclerView.ViewHolder
         ): Boolean {
+
             val fromPos = viewHolder.adapterPosition
             val toPosition = target.adapterPosition
+            if (toPosition > data.lastIndex) return false
             Collections.swap(data, fromPos, toPosition)
             errandRecyclerView.adapter?.notifyItemMoved(fromPos, toPosition)
-
+            Collections.swap(errandModel.errands.value, fromPos, toPosition)
+            Collections.swap(errandModel.bestResults.value, fromPos, toPosition)
+            parentFragmentManager.apply {
+                val result = Bundle()
+                result.putBoolean("markerOrderChanged", true)
+                result.putInt("fromPos", fromPos)
+                result.putInt("toPos", toPosition)
+                setFragmentResult("markerOrderChanged", result)
+            }
+            Log.d("itemmoved", "$fromPos to $toPosition")
             return true
         }
         override fun clearView(recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder) {
             // call update all here
-            //Log.d("clearview", "called")
+            Log.d("clearview", "called")
             super.clearView(recyclerView, viewHolder)
-//            for (ec in data) { // sort and update in ui list first
-//                //Log.d("previous prio: ", "" + ec.priority)
-//                ec.priority = data.indexOf(ec)
-//                //Log.d("updated prio: ",  "to " + ec.priority)
-//            }
-//            runBlocking {
-//                val dao = (requireActivity() as MainActivity).db.econtactDAO()
-//                dao.updateAll(*data.toTypedArray())
-//                parentFragmentManager.apply {
-//                    val result = Bundle()
-//                    result.putStringArray("eContactNums", buildNumsArray())
-//                    result.putStringArray("eContactNames", buildNameArray())
-//                    this.setFragmentResult("eContactsChanged", result)
-//                }
-//                //econtactRecyclerView.adapter?.notifyDataSetChanged()
-//            }
 
         }
 
@@ -104,6 +231,8 @@ class ErrandFragment : Fragment() {
         override fun isLongPressDragEnabled(): Boolean {
             return true
         }
+
+
 
 
         override fun getMovementFlags(
@@ -124,17 +253,21 @@ class ErrandFragment : Fragment() {
             return super.getSwipeDirs(recyclerView, viewHolder)
         }
 
+
+
         override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
             val pos = viewHolder.adapterPosition
             data.removeAt(pos)
             errandRecyclerView.adapter?.notifyItemRemoved(pos)
-            // call delete here
-//            runBlocking {
-//                val dao = (requireActivity() as MainActivity).db.econtactDAO()
-//                dao.deleteAll(data.removeAt(pos))
-//                econtactRecyclerView.adapter?.notifyItemRemoved(pos)
-//            }
-
+            errandModel.errands.value!!.removeAt(pos)
+            errandModel.bestResults.value!!.removeAt(pos)
+            // call update poly
+            parentFragmentManager.apply {
+                val result = Bundle()
+                result.putBoolean("errandRemoved", true)
+                result.putInt("indexRemoved", pos)
+                setFragmentResult("errandRemoved", result)
+            }
         }
     }
 
@@ -145,4 +278,67 @@ class ErrandFragment : Fragment() {
         }
         return arrList
     }
+    fun openDialog() {
+        Log.d("openDialog", "called")
+        val dialog = AddErrandDialog()
+        dialog.show(childFragmentManager, "errand dialog")
+    }
+
+    private fun reAdd(errand : String) {
+        val errActivity = activity as ErrandActivity
+        errandModel.currPlaceInfo.value = hashMapOf("id" to errActivity.currPlaceId, "latLng" to errActivity.currPlaceLatLng)
+
+        errandModel.errands.value!!.add(errand)
+        errandModel.getPlaceResult(errActivity.radiusSlider.value.toInt(), errActivity.price_level, errActivity.ratingBar.rating.toDouble(),
+            errActivity.chipGroup.checkedChipId == R.id.chip_rating) { result ->
+            if (result != null) {
+                data.add(linkedMapOf("errandName" to errand, "storeName" to result.name, "address" to result.formatted_address))
+                errandRecyclerView.adapter?.notifyItemInserted(data.lastIndex)
+                //update poly
+                parentFragmentManager.apply {
+                    val result = Bundle()
+                    result.putBoolean("errandReAdded", true)
+                    setFragmentResult("errandReAdded", result)
+                }
+            } else {
+                errandModel.errands.value!!.removeLast()
+                parentFragmentManager.apply {
+                    val result = Bundle()
+                    result.putBoolean("errandReAdded", true)
+                    setFragmentResult("errandReAdded", result)
+                }
+                Toast.makeText(context, "Could not find a result for the inputted errand: $errand" , Toast.LENGTH_SHORT).show()
+            }
+
+        }
+
+    }
+
+    override fun addErrand(errand: String) {
+        val errActivity = activity as ErrandActivity
+        errandModel.currPlaceInfo.value = hashMapOf("id" to errActivity.currPlaceId, "latLng" to errActivity.currPlaceLatLng)
+        //errandModel.currLatLng.value = (activity as ErrandActivity).currPlaceLatLng
+
+        errandModel.errands.value!!.add(errand)
+        errandModel.getPlaceResult(errActivity.radiusSlider.value.toInt(), errActivity.price_level, errActivity.ratingBar.rating.toDouble(),
+            errActivity.chipGroup.checkedChipId == R.id.chip_rating) { result ->
+            if (result != null) {
+                data.add(linkedMapOf("errandName" to errand, "storeName" to result.name, "address" to result.formatted_address))
+                errandRecyclerView.adapter?.notifyItemInserted(data.lastIndex)
+                //update poly
+                parentFragmentManager.apply {
+                    val result = Bundle()
+                    result.putBoolean("errandAdded", true)
+                    setFragmentResult("errandAdded", result)
+                }
+            } else {
+                errandModel.errands.value!!.removeLast()
+                Toast.makeText(context, "Could not find a result for the inputted errand", Toast.LENGTH_SHORT).show()
+            }
+
+        }
+
+    }
+
+
 }
