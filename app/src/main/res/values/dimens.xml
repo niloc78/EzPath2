@@ -2,5 +2,4 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
     <dimen name="design_fab_size_custom">49dp</dimen>
     <dimen name="design_fab_notes">44dp</dimen>
-    <dimen tools:override="true" name="design_navigation_separator_vertical_padding">20dp</dimen>
 </resources>

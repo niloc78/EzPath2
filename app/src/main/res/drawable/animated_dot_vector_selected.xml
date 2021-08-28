@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<animated-vector xmlns:android="http://schemas.android.com/apk/res/android"
-    android:drawable="@drawable/ic_menu_icon">
-
-    <target
-        android:animation="@animator/rotationback"
-        android:name="dot_rotate_group"/>
-
-</animated-vector>

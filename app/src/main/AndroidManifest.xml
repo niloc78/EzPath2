@@ -1,8 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.example.ezpath2">
+    package="com.crosie.ezpath2"
+    android:versionCode="1"
+    android:versionName="1.0.0">
 
     <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
 
     <application
         android:allowBackup="false"
@@ -11,7 +14,7 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.EzPath2">
-        <activity android:name=".MainActivity"
+        <activity android:name="com.crosie.ezpath2.MainActivity"
             android:configChanges="orientation|keyboardHidden|screenSize"
             android:launchMode="singleTop"
             android:windowSoftInputMode="adjustNothing"
@@ -23,7 +26,7 @@
             </intent-filter>
         </activity>
 
-        <activity android:name=".ErrandActivity"
+        <activity android:name="com.crosie.ezpath2.ErrandActivity"
             android:configChanges="orientation|keyboardHidden|screenSize"
             android:windowSoftInputMode="adjustNothing"
             android:launchMode="singleTop"
