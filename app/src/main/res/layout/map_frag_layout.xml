@@ -46,7 +46,9 @@
 
     <androidx.coordinatorlayout.widget.CoordinatorLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="0dp"
+        app:layout_constraintTop_toBottomOf="@id/header_background"
+        app:layout_constraintBottom_toBottomOf="parent"
         android:animateLayoutChanges="true"
         android:orientation="vertical">
         <com.google.android.gms.maps.MapView
@@ -61,6 +63,23 @@
             android:visibility="invisible"/>
 
     </androidx.coordinatorlayout.widget.CoordinatorLayout>
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/gear_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:fabCustomSize="@dimen/design_fab_notes"
+        android:elevation="5dp"
+        app:elevation="5dp"
+        app:layout_behavior="com.google.android.material.appbar.AppBarLayout$ScrollingViewBehavior"
+        android:src="@drawable/ic_gear_icon"
+        android:layout_marginRight="10dp"
+        android:layout_marginTop="10dp"
+        android:layout_marginLeft="10dp"
+        android:layout_marginBottom="80dp"
+        style="@style/gearFabStyle"
+        app:layout_constraintTop_toBottomOf="@id/header_background"
+        app:layout_constraintStart_toStartOf="parent"/>
 
 
 

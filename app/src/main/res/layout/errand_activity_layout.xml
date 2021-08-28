@@ -257,7 +257,7 @@
                 app:layout_constraintVertical_bias="0.025"
                 android:valueFrom="300"
                 android:valueTo="15000"
-                android:value="1500"
+                android:value="10000"
                 app:tickColor="@android:color/transparent"
                 app:thumbColor="@color/white"
                 app:thumbStrokeColor="@color/white"

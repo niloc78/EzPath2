@@ -1,7 +1,9 @@
 package com.example.ezpath2
 
+import android.Manifest
 import android.animation.Animator
 import android.content.Context
+import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
 import android.os.Handler
@@ -13,10 +15,13 @@ import android.widget.FrameLayout
 import android.widget.ImageButton
 import android.widget.RatingBar
 import android.widget.Toast
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.constraintlayout.widget.ConstraintSet
+import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.view.GravityCompat
 import androidx.core.view.updateLayoutParams
@@ -67,6 +72,7 @@ class ErrandActivity : AppCompatActivity() , SaveSetDialog.SaveSetDialogListener
     var price_level = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        setTheme(R.style.splashTheme)
 //        if (savedInstanceState != null) {
 //            Log.d(savedInstanceState.getString("hello"), "passed")
 //        }
@@ -91,6 +97,9 @@ class ErrandActivity : AppCompatActivity() , SaveSetDialog.SaveSetDialogListener
 
             override fun onDrawerClosed(drawerView: View) {
                 (supportFragmentManager.findFragmentByTag("f0") as ErrandFragment).toggleSideBarButtonAnim()
+                for (i in 0 until setData.size) {
+                    (linearLayoutManager.findViewByPosition(i))?.performClick()
+                }
             }
 
             override fun onDrawerStateChanged(newState: Int) {
@@ -98,6 +107,7 @@ class ErrandActivity : AppCompatActivity() , SaveSetDialog.SaveSetDialogListener
 
         })
         initSavedSets()
+        checkForLocationPermissionAndLaunchRequest()
     }
 
     private fun showSaveSetDialog() {
@@ -140,9 +150,35 @@ class ErrandActivity : AppCompatActivity() , SaveSetDialog.SaveSetDialogListener
         Log.d("onresume", "Called")
     }
 
+    private fun mapFragExists() : Boolean {
+        return supportFragmentManager.findFragmentByTag("f1") != null
+    }
+
+    private fun mapFrag() : MapFragment {
+        return supportFragmentManager.findFragmentByTag("f1") as MapFragment
+    }
+
     override fun onStop() {
         super.onStop()
         Log.d("onstop", "called")
+    }
+
+    private fun checkForLocationPermissionAndLaunchRequest() {
+        if (!checkPermission()) {
+            mPermissionResult.launch(Manifest.permission.ACCESS_FINE_LOCATION)
+        }
+    }
+
+    private val mPermissionResult: ActivityResultLauncher<String> = registerForActivityResult(
+            ActivityResultContracts.RequestPermission()) { result ->
+        when (result) {
+            true -> {}
+            else -> {}
+        }
+    }
+
+    private fun checkPermission() : Boolean {
+        return ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
     }
 
     override fun onBackPressed() {
@@ -268,7 +304,11 @@ class ErrandActivity : AppCompatActivity() , SaveSetDialog.SaveSetDialogListener
 
         saveButton = findViewById(R.id.save_button)
         saveButton.setOnClickListener {
-            showSaveSetDialog()
+            if (setData.size >= 5) {
+                Toast.makeText(this, "You cannot save more than 5 sets", Toast.LENGTH_SHORT).show()
+            } else {
+                showSaveSetDialog()
+            }
         }
 
         toggleFragButton = findViewById(R.id.toggle_frag_button)

@@ -7,6 +7,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.CheckBox
 import android.widget.TextView
+import android.widget.Toast
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.card.MaterialCardView
 
@@ -54,7 +55,11 @@ class ErrandAdapter(val parFrag : ErrandFragment, var data : ArrayList<LinkedHas
 
         fun bind() {
             addButton.setOnClickListener {
-                  parFrag.openDialog()
+                if (data.size == 10) {
+                    Toast.makeText(parFrag.context, "You've reached the limit of 10 errands", Toast.LENGTH_SHORT).show()
+                } else {
+                    parFrag.openDialog()
+                }
 //                data.add(linkedMapOf("errandName" to "Buy Pencils", "storeName" to "CW Enterprise", "address" to "15 Orchard Street"))
 //                this@ErrandAdapter.notifyItemInserted(data.lastIndex)
             }

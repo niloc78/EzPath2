@@ -1,9 +1,12 @@
 package com.example.ezpath2
 
+import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Context
+import android.content.pm.PackageManager
 import android.graphics.Color
 import android.os.Bundle
+import android.os.Looper
 import android.util.Log
 import android.util.TypedValue
 import android.view.LayoutInflater
@@ -12,11 +15,16 @@ import android.view.ViewGroup
 import android.widget.EditText
 import android.widget.ImageView
 import android.widget.RelativeLayout
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.core.view.updateLayoutParams
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.transition.*
+import com.google.android.gms.location.*
 import com.google.android.gms.maps.*
 import com.google.android.gms.maps.model.*
 import com.google.android.material.bottomsheet.BottomSheetBehavior
@@ -25,7 +33,7 @@ import jp.wasabeef.blurry.Blurry
 import java.util.*
 import kotlin.collections.ArrayList
 
-class MapFragment : Fragment(), OnMapReadyCallback {
+class MapFragment : Fragment(), OnMapReadyCallback, EnableLocationDialog.LocationEnabledDialogListener {
     lateinit var toggleNoteButton : FloatingActionButton
     lateinit var bottomSheetBehavior: BottomSheetBehavior<ConstraintLayout>
     lateinit var mapFragment : SupportMapFragment
@@ -34,8 +42,30 @@ class MapFragment : Fragment(), OnMapReadyCallback {
     lateinit var errandModel : ErrandModel
     lateinit var blurScrim : ImageView
     lateinit var editNote : EditText
+    lateinit var gearButton : FloatingActionButton
     private var markers = ArrayList<Marker>()
+    lateinit var fusedLocationClient: FusedLocationProviderClient
     var polyLine : Polyline? = null
+
+    private val locationCallback = object: LocationCallback() {
+        override fun onLocationResult(locResult: LocationResult) {
+            //do stuff
+        }
+    }
+
+    private fun startLocationUpdates(locationRequest: LocationRequest, locationCallback: LocationCallback) {
+        if (checkPermission()) {
+            fusedLocationClient.requestLocationUpdates(locationRequest, locationCallback, Looper.getMainLooper())
+        }
+    }
+
+    private fun createLocationRequest() : LocationRequest {
+        return LocationRequest.create().apply {
+            interval = 5000
+            fastestInterval = 5000
+            priority = LocationRequest.PRIORITY_HIGH_ACCURACY
+        }
+    }
 
 
     override fun onCreateView(
@@ -44,6 +74,18 @@ class MapFragment : Fragment(), OnMapReadyCallback {
         savedInstanceState: Bundle?
     ): View? {
         return inflater.inflate(R.layout.map_frag_layout, container, false)
+    }
+
+    override fun onResume() {
+        super.onResume()
+        if (map != null && map.isMyLocationEnabled) {
+            startLocationUpdates(createLocationRequest(), locationCallback)
+        }
+    }
+
+    override fun onPause() {
+        fusedLocationClient?.removeLocationUpdates(locationCallback)
+        super.onPause()
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -177,6 +219,8 @@ class MapFragment : Fragment(), OnMapReadyCallback {
                 }
             })
         }
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireContext())
+
     }
 
     private fun initViews(v: View) {
@@ -236,11 +280,6 @@ class MapFragment : Fragment(), OnMapReadyCallback {
         })
 
         editNote = v.findViewById(R.id.edit_note)
-//        editNote.apply {
-////            setOnClickListener {
-////                requestFocus()
-////            }
-//        }
         editNote.setOnFocusChangeListener { v, hasFocus ->
             if (!hasFocus) {
                 Log.d("hasfocus", "false")
@@ -257,7 +296,16 @@ class MapFragment : Fragment(), OnMapReadyCallback {
             toggleNoteButton.performClick()
         }
         mapView = v.findViewById(R.id.map_container)
+        gearButton = v.findViewById(R.id.gear_button)
+        gearButton.setOnClickListener {
+            showEnableLocationDialog()
+        }
 
+    }
+
+    private fun showEnableLocationDialog() {
+        val dialog = EnableLocationDialog()
+        dialog.show(childFragmentManager, "location dialog")
     }
 
     private fun initNote() {
@@ -280,6 +328,11 @@ class MapFragment : Fragment(), OnMapReadyCallback {
 
     }
 
+    fun checkPermission() : Boolean {
+        return ActivityCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
+    }
+
+
     @SuppressLint("ResourceType")
     override fun onMapReady(p0: GoogleMap) {
         p0.moveCamera(CameraUpdateFactory.newLatLng(LatLng(0.toDouble(), 0.toDouble())))
@@ -287,6 +340,7 @@ class MapFragment : Fragment(), OnMapReadyCallback {
         if (zoomControls != null && zoomControls.layoutParams is RelativeLayout.LayoutParams) {
             zoomControls.updateLayoutParams {
                 val params = this as RelativeLayout.LayoutParams
+
                 params.addRule(RelativeLayout.ALIGN_PARENT_TOP)
                 params.addRule(RelativeLayout.ALIGN_PARENT_RIGHT)
                 val margin = TypedValue.applyDimension(
@@ -294,10 +348,17 @@ class MapFragment : Fragment(), OnMapReadyCallback {
                     10F,
                     resources.displayMetrics
                 ).toInt()
-                params.setMargins(margin, margin, margin, margin)
+                params.setMargins(margin, 6*margin, margin, margin)
+
             }
         }
+
         map = p0
+
+        if (checkPermission()) {
+            map.isMyLocationEnabled = true
+        }
+
         val latLng = LatLng(
             (activity as ErrandActivity).currPlaceLatLng[0],
             (activity as ErrandActivity).currPlaceLatLng[1]
@@ -309,6 +370,36 @@ class MapFragment : Fragment(), OnMapReadyCallback {
                     .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE))
             )
         )
+    }
+
+    @SuppressLint("MissingPermission")
+    override fun enableLocation(b: Boolean) {
+        if (b) {
+            checkForLocationPermissionAndLaunchRequest()
+        } else {
+            map.isMyLocationEnabled = false
+        }
+    }
+
+    private fun checkForLocationPermissionAndLaunchRequest() {
+        if (!checkPermission()) {
+            mPermissionResult.launch(Manifest.permission.ACCESS_FINE_LOCATION)
+        } else {
+            map.isMyLocationEnabled = true
+            startLocationUpdates(createLocationRequest(), locationCallback)
+        }
+    }
+
+    @SuppressLint("MissingPermission")
+    private val mPermissionResult: ActivityResultLauncher<String> = registerForActivityResult(
+            ActivityResultContracts.RequestPermission()) { result ->
+                if (result) {
+                    map.isMyLocationEnabled = true
+                    startLocationUpdates(createLocationRequest(), locationCallback)
+                } else {
+                    map.isMyLocationEnabled = false
+                    fusedLocationClient.removeLocationUpdates(locationCallback)
+                }
     }
 
 

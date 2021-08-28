@@ -26,8 +26,8 @@
         android:hint="Name"
         android:singleLine="true"
         android:textSize="18sp"
-        android:maxLength="10"
-        android:digits="abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890"
+        android:maxLength="20"
+        android:digits="abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890 "
         app:layout_constraintTop_toBottomOf="@id/give_a_name"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

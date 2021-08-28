@@ -23,8 +23,14 @@ class SetAdapter(val errActivity : ErrandActivity, var data : ArrayList<String>)
 
         fun bind(pos : Int) {
             setName.text = data[pos]
-            setName.setOnClickListener {
-                errActivity.openConfirmLoadSetDialog(setName.text as String)
+            setName.apply {
+                setOnClickListener {
+                    errActivity.openConfirmLoadSetDialog(setName.text as String)
+                }
+                setOnLongClickListener {
+                    setContainer.performLongClick()
+                    true
+                }
             }
 
             setContainer.apply {
@@ -63,6 +69,7 @@ class SetAdapter(val errActivity : ErrandActivity, var data : ArrayList<String>)
         }
 
     }
+
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val view = LayoutInflater.from(parent.context).inflate(R.layout.set_item_layout, parent, false)

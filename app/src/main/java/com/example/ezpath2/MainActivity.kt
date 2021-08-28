@@ -41,6 +41,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var currPlaceLatLng : DoubleArray
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        setTheme(R.style.splashTheme)
         super.onCreate(savedInstanceState)
         if (locationExists() && !isForResult()) {
             val prefs = this.getSharedPreferences(this.packageName + "_preferences", Context.MODE_PRIVATE)
@@ -97,9 +98,9 @@ class MainActivity : AppCompatActivity() {
         }
         defaultButtonWidth = searchButton.layoutParams.width
         defaultButtonRadius = searchButton.radius
-        (findViewById<Button>(R.id.test_skip)).setOnClickListener {
-            launchErrandActivity()
-        }
+//        (findViewById<Button>(R.id.test_skip)).setOnClickListener {
+//            launchErrandActivity()
+//        }
         if (!Places.isInitialized()) {
             Places.initialize(this, PLACES_API_KEY)
         }
