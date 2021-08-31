@@ -93,9 +93,15 @@ class MapFragment : Fragment(), OnMapReadyCallback, EnableLocationDialog.Locatio
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         initViews(view)
-        initMap(view)
+        initMap()
         errandModel = ViewModelProvider(requireActivity()).get(ErrandModel::class.java)
         initNote()
+        setFragListeners()
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireContext())
+
+    }
+
+    private fun setFragListeners() {
         parentFragmentManager.apply {
             setFragmentResultListener("errandRemoved", this@MapFragment, { _, result ->
                 if (result.getBoolean("errandRemoved")) {
@@ -154,11 +160,7 @@ class MapFragment : Fragment(), OnMapReadyCallback, EnableLocationDialog.Locatio
                             geometry["lat"]!! as Double,
                             geometry["lng"]!! as Double
                         )
-                        markers.add(
-                            map.addMarker(
-                                MarkerOptions().position(latLng).title(bestPlace.name)
-                            )
-                        )
+                        markers.add(map.addMarker(MarkerOptions().position(latLng).title(bestPlace.name))!!)
                         polyLine?.remove()
                         polyLine = map.addPolyline(
                             PolylineOptions().addAll(dpoly).width(17F).color(
@@ -190,9 +192,9 @@ class MapFragment : Fragment(), OnMapReadyCallback, EnableLocationDialog.Locatio
                     map.animateCamera(CameraUpdateFactory.newCameraPosition(CameraPosition.Builder().target(latLng).zoom(10F).build()))
                     markers.add(
                         map.addMarker(
-                            MarkerOptions().position(latLng).title("CurrentLocation")
+                            MarkerOptions().position(latLng).title("Starting Location")
                                 .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE))
-                        )
+                        )!!
                     )
 
                 }
@@ -209,7 +211,7 @@ class MapFragment : Fragment(), OnMapReadyCallback, EnableLocationDialog.Locatio
                         markers.add(
                             map.addMarker(
                                 MarkerOptions().position(latLng).title(bestPlace.name)
-                            )
+                            )!!
                         )
                         polyLine?.remove()
                         polyLine = map.addPolyline(
@@ -221,8 +223,6 @@ class MapFragment : Fragment(), OnMapReadyCallback, EnableLocationDialog.Locatio
                 }
             })
         }
-        fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireContext())
-
     }
 
     private fun initViews(v: View) {
@@ -282,7 +282,7 @@ class MapFragment : Fragment(), OnMapReadyCallback, EnableLocationDialog.Locatio
         })
 
         editNote = v.findViewById(R.id.edit_note)
-        editNote.setOnFocusChangeListener { v, hasFocus ->
+        editNote.setOnFocusChangeListener { _, hasFocus ->
             if (!hasFocus) {
                 //Log.d("hasfocus", "false")
                 //Log.d("saveNote", "called")
@@ -318,7 +318,7 @@ class MapFragment : Fragment(), OnMapReadyCallback, EnableLocationDialog.Locatio
         }
     }
 
-    private fun initMap(v: View) {
+    private fun initMap() {
         val options = GoogleMapOptions()
         options.apply {
             compassEnabled(true)
@@ -330,7 +330,7 @@ class MapFragment : Fragment(), OnMapReadyCallback, EnableLocationDialog.Locatio
 
     }
 
-    fun checkPermission() : Boolean {
+    private fun checkPermission() : Boolean {
         return ActivityCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
     }
 
@@ -368,9 +368,9 @@ class MapFragment : Fragment(), OnMapReadyCallback, EnableLocationDialog.Locatio
         map.animateCamera(CameraUpdateFactory.newCameraPosition(CameraPosition.Builder().target(latLng).zoom(10F).build()))
         markers.add(
             map.addMarker(
-                MarkerOptions().position(latLng).title("CurrentLocation")
+                MarkerOptions().position(latLng).title("Starting Location")
                     .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE))
-            )
+            )!!
         )
     }
 

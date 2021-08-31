@@ -18,10 +18,10 @@ class SaveSetDialog : AppCompatDialogFragment() {
         val inflater = requireActivity().layoutInflater
         val view = inflater.inflate(R.layout.save_set_dialog_layout, null)
         val dialog = builder.setView(view).apply {
-            setNegativeButton("Cancel") { dialogInterface, i ->
+            setNegativeButton("Cancel") { _, _ ->
 
             }
-            setPositiveButton("Save") { dialogInterface, i ->
+            setPositiveButton("Save") { _, _ ->
                 val name = edit_set_name.text.toString()
                 listener.saveSet(name)
             }

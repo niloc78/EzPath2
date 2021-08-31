@@ -75,9 +75,6 @@ class ErrandActivity : AppCompatActivity() , SaveSetDialog.SaveSetDialogListener
 
     override fun onCreate(savedInstanceState: Bundle?) {
         setTheme(R.style.splashTheme)
-//        if (savedInstanceState != null) {
-//            Log.d(savedInstanceState.getString("hello"), "passed")
-//        }
         super.onCreate(savedInstanceState)
         val i = intent
         currPlaceId = i.getStringExtra("currPlaceId")!!
@@ -99,8 +96,8 @@ class ErrandActivity : AppCompatActivity() , SaveSetDialog.SaveSetDialogListener
 
             override fun onDrawerClosed(drawerView: View) {
                 (supportFragmentManager.findFragmentByTag("f0") as ErrandFragment).toggleSideBarButtonAnim()
-                for (i in 0 until setData.size) {
-                    (linearLayoutManager.findViewByPosition(i))?.performClick()
+                for (index in 0 until setData.size) {
+                    (linearLayoutManager.findViewByPosition(index))?.performClick()
                 }
             }
 
@@ -151,12 +148,6 @@ class ErrandActivity : AppCompatActivity() , SaveSetDialog.SaveSetDialogListener
             //Log.d("moveTaskToBack", "called")
             moveTaskToBack(true)
         }
-    }
-
-    override fun onSaveInstanceState(outState: Bundle) {
-        outState.putString("hello", "hello")
-        super.onSaveInstanceState(outState)
-        //Log.d("onsaveinstancestate", "called")
     }
 
     fun openConfirmLoadSetDialog(setName : String) {

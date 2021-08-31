@@ -1,5 +1,5 @@
 <resources xmlns:app="http://schemas.android.com/apk/res-auto">
-    <string name="app_name">EzPath2</string>
+    <string name="app_name">EzPath</string>
     <string name="myde">
         <font color="#CBCBCB">
             MAKE YOUR DAY EASIER

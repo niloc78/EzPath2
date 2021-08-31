@@ -43,15 +43,9 @@ class ErrandModel(application: Application) : AndroidViewModel(application) {
                 } else {
                     val distMatrix = errandResults.calculateDistanceMatrix(currPlaceInfo.value!!["latLng"] as DoubleArray)
                     bestResults.value!!.add(errandResults.chooseBestPlace(radius, priceLevel, rating, chipRating))
-
                     onSuccess(bestResults.value!!.last())
                     //Log.d("distMatrix", distMatrix.joinToString())
                 }
-
-
-//                updatePoly {
-//                    onSuccess(it)
-//                }
 
 
             }

@@ -12,13 +12,9 @@ class GetUrlContent(val resultCallBack : IResult, val context : Context) {
         try {
             val queue = Volley.newRequestQueue(context)
             val jsonObj = JsonObjectRequest(Request.Method.GET, url, null, { response ->
-                if (resultCallBack != null) {
                     resultCallBack.notifySuccess(requestType, response)
-                }
             }, { error ->
-                if (resultCallBack != null ) {
                     resultCallBack.notifyError(requestType, error)
-                }
             })
 
             queue.add(jsonObj)

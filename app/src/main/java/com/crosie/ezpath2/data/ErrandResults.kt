@@ -24,17 +24,19 @@ data class ErrandResults(val html_attributions : Array<String>,
     fun chooseBestPlace(r : Int, price_level : Int, rating : Double, chip_rating : Boolean) : Result {
         bestPlace = results[0]
         for (i in 0..results.size - 2) {
-            if (distMatrix[i] > r) {
+            if (distMatrix[i] > r) { // within radius
                 continue
             }
-            if (results[i].price_level != price_level && price_level != 0) {
+            if (results[i].price_level != price_level && price_level != 0) { // price level selected and is the price target
                 continue
             }
-            if (results[i].rating < rating) {
+            if (results[i].rating < rating) { // rating is greater than or eq to min
                 continue
             }
-            if (chip_rating && results[i + 1].rating > bestPlace.rating) {
-                bestPlace = results[i+1]
+            bestPlace = if (chip_rating && results[i + 1].rating > bestPlace.rating) { // prioritize by rating
+                results[i+1]
+            } else {
+                if ((bestPlace.price_level != price_level && price_level != 0)  || bestPlace.rating < rating) results[i] else bestPlace
             }
         }
         return bestPlace

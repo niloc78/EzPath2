@@ -25,7 +25,7 @@ class ErrandAdapter(val parFrag : ErrandFragment, var data : ArrayList<LinkedHas
             errandName.text = errName
             storeName.text = storName
             address.text = addr
-            checkBox.setOnCheckedChangeListener { buttonView, isChecked ->
+            checkBox.setOnCheckedChangeListener { _, isChecked ->
                 when(isChecked) {
                     true -> {
                         errandCard.isChecked = true

@@ -7,9 +7,9 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
-import android.util.Log
 import android.view.View
 import android.view.ViewGroup
+import androidx.appcompat.app.AppCompatDelegate
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.constraintlayout.widget.ConstraintSet
 import androidx.core.view.updateLayoutParams
@@ -38,6 +38,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var currPlaceLatLng : DoubleArray
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
         setTheme(R.style.splashTheme)
         super.onCreate(savedInstanceState)
         if (locationExists() && !isForResult()) {
@@ -101,7 +102,6 @@ class MainActivity : AppCompatActivity() {
         if (!Places.isInitialized()) {
             Places.initialize(this, PLACES_API_KEY)
         }
-
 
         Places.createClient(this)
         autoCompleteSupportFrag = supportFragmentManager.findFragmentById(R.id.place_search_autocomplete) as AutocompleteSupportFragment
@@ -168,7 +168,6 @@ class MainActivity : AppCompatActivity() {
             moveTaskToBack(true)
         }
     }
-
 
 
     private fun MaterialCardView.toggleExpand () {

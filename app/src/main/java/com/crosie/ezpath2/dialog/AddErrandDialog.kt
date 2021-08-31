@@ -18,11 +18,11 @@ class AddErrandDialog : AppCompatDialogFragment() {
         val inflater = requireActivity().layoutInflater
         val view = inflater.inflate(R.layout.add_errand_dialog, null)
         val dialog = builder.setView(view).apply {
-            setNegativeButton("Cancel") { dialogInterface, i ->
+            setNegativeButton("Cancel") { _, _ ->
 
             }
-            setPositiveButton("Add") { dialogInterface, i ->
-                val errand = edit_errand.text.toString()
+            setPositiveButton("Add") { _, _ ->
+                val errand = edit_errand.text.toString().replaceFirst(edit_errand.text.toString().first(), edit_errand.text.toString().first().toUpperCase())
                 listener.addErrand(errand)
             }
         }.show()
