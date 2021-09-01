@@ -37,3 +37,5 @@
 8. (OPTIONAL) To load saved errands, the user will need to press on the folder icon and quickly press on their saved errands. Holding any set of saved errands will reveal a delete option.
 
 </br>
+
+![Alt Text](https://im7.ezgif.com/tmp/ezgif-7-85678d7102ca.gif)
